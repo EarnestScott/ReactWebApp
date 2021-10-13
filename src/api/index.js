@@ -3,24 +3,31 @@ const { addAsync } = require('@awaitjs/express');
 const bluebird = require('bluebird');
 const fetch = require('node-fetch');
 const mongoose = require('./odm');
+const UserSchema = require('./UserSchema');
 const fs = require('fs');
-const app = addAsync(express());
+const bodyParser = require('body-parser');
+
+const app = express();
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+const server = addAsync(app);
 const port = 3001
 
 let rawdata = fs.readFileSync('config.json');
 let config = JSON.parse(rawdata);
 
-app.use((req, res, next) => {
+server.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
 
-app.get('/', (req, res) => {
+server.get('/', (req, res) => {
     res.send('Hello World!')
 });
 
-app.getAsync('/companyNews', async (req, res, next) => {
+server.getAsync('/companyNews', async (req, res, next) => {
 
     // this should come from db
     const companies = ['tesla', 'apple', 'qualcomm'];
@@ -33,15 +40,26 @@ app.getAsync('/companyNews', async (req, res, next) => {
     console.log(cleanedCompanyData);
     res.json(cleanedCompanyData);
 });
-
+server.postAsync('/user', async (req, res, next) => {
+    const { username, password } = req.body;
+    const newUser = new UserSchema({ username, password });
+    const savedUser = await newUser.save();
+    res.json(savedUser);
+});
+server.getAsync('/user', async (req, res, next) => res.json("hello"));
+server.getAsync('/user/:username', async (req, res, next) => {
+    const username = req.params.username;
+    const foundUser = await UserSchema.findOne({ username });
+    res.json(foundUser);
+})
 //example of using mongoose to interact with db
-app.postAsync('/newTank', async (req, res, next) => {
+server.postAsync('/newTank', async (req, res, next) => {
     const schema = new mongoose.Schema({ name: 'string', size: 'string' });
     const Tank = mongoose.model('Tank', schema);
     const creating = await Tank.create({ name: "firstTank", size: "small" });
     res.json(creating);
 });
 
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
 });
