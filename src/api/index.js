@@ -2,6 +2,7 @@ const express = require('express');
 const { addAsync } = require('@awaitjs/express');
 const bluebird = require('bluebird');
 const fetch = require('node-fetch');
+const mongoose = require('./odm');
 const fs = require('fs');
 const app = addAsync(express());
 const port = 3001
@@ -33,6 +34,14 @@ app.getAsync('/companyNews', async (req, res, next) => {
     res.json(cleanedCompanyData);
 });
 
+//example of using mongoose to interact with db
+app.postAsync('/newTank', async (req, res, next) => {
+    const schema = new mongoose.Schema({ name: 'string', size: 'string' });
+    const Tank = mongoose.model('Tank', schema);
+    const creating = await Tank.create({ name: "firstTank", size: "small" });
+    res.json(creating);
+});
+
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
-})
+});
