@@ -56,7 +56,6 @@ server.postAsync('/login', async (req, res, next) => {
     const { username, password } = req.body;
     const foundUser = await UserSchema.findOne({ username });
     const passwordsMatch = await foundUser?.comparePassword(password);
-    console.log(passwordsMatch);
     const message = passwordsMatch ? "User logged in!" : "Incorrect username or password";
     res.json(message);
 

@@ -25,7 +25,7 @@ class NewsDisplay extends Component {
         const { companyData } = this.state;
         const displayCompanyData = companyData?.map(({ title, description, urlToImage }, idx) =>
             <Col key={idx}>
-                <Card className={"mb-2 mt-4"} border={"dark"} bg={"light"} style={{ width: '18rem' }}>
+                <Card className={"mb-2 mt-4 h-100"} border={"dark"} bg={"light"} style={{ width: '18rem' }}>
                     <Card.Img variant="top" src={urlToImage} />
                     <Card.Body>
                         <Card.Title>{title}</Card.Title>
