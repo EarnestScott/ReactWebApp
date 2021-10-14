@@ -8,10 +8,10 @@ const fs = require('fs');
 const bodyParser = require('body-parser');
 
 const app = express();
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
 
 const server = addAsync(app);
+server.use(bodyParser.urlencoded({ extended: true }));
+server.use(bodyParser.json());
 const port = 3001
 
 let rawdata = fs.readFileSync('config.json');
@@ -51,6 +51,15 @@ server.getAsync('/user/:username', async (req, res, next) => {
     const username = req.params.username;
     const foundUser = await UserSchema.findOne({ username });
     res.json(foundUser);
+})
+server.postAsync('/login', async (req, res, next) => {
+    const { username, password } = req.body;
+    const foundUser = await UserSchema.findOne({ username });
+    const passwordsMatch = await foundUser?.comparePassword(password);
+    console.log(passwordsMatch);
+    const message = passwordsMatch ? "User logged in!" : "Incorrect username or password";
+    res.json(message);
+
 })
 //example of using mongoose to interact with db
 server.postAsync('/newTank', async (req, res, next) => {

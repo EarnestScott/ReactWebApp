@@ -10,14 +10,22 @@ function LoginModal() {
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         const form = event.currentTarget;
         if (form.checkValidity() === false) {
             event.stopPropagation();
         }
-
         setValidated(true);
+
+        const body = { username, password };
+        const loginRequest = await fetch('http://localhost:3001/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        })
+        const loginRequestJson = await loginRequest.json();
+        alert(loginRequestJson);
     };
     const handleUsername = (e) => e && setUsername(e.target.value);
     const handlePassword = (e) => e && setPassword(e.target.value);
