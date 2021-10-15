@@ -28,7 +28,7 @@ server.use((req, res, next) => {
 });
 const oneDay = 1000 * 60 * 60 * 24;
 app.use(sessions({
-    secret: "<TODO>",
+    secret: config.secret,
     saveUninitialized: true,
     cookie: { maxAge: oneDay },
     resave: false
