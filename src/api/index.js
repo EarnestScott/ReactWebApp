@@ -6,12 +6,16 @@ const mongoose = require('./odm');
 const UserSchema = require('./UserSchema');
 const fs = require('fs');
 const bodyParser = require('body-parser');
+const cookieParser = require("cookie-parser");
+const sessions = require('express-session');
+
 
 const app = express();
 
 const server = addAsync(app);
 server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
+server.use(cookieParser());
 const port = 3001
 
 let rawdata = fs.readFileSync('config.json');
@@ -22,6 +26,13 @@ server.use((req, res, next) => {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
+const oneDay = 1000 * 60 * 60 * 24;
+app.use(sessions({
+    secret: "<TODO>",
+    saveUninitialized: true,
+    cookie: { maxAge: oneDay },
+    resave: false
+}))
 
 server.get('/', (req, res) => {
     res.send('Hello World!')
@@ -53,13 +64,29 @@ server.getAsync('/user/:username', async (req, res, next) => {
     res.json(foundUser);
 })
 server.postAsync('/login', async (req, res, next) => {
+    let session = req.session;
     const { username, password } = req.body;
+    if (session.userid) {
+        res.json(`You're already logged in ${session.userid}`);
+        return;
+    }
     const foundUser = await UserSchema.findOne({ username });
     const passwordsMatch = await foundUser?.comparePassword(password);
-    const message = passwordsMatch ? "User logged in!" : "Incorrect username or password";
-    res.json(message);
+    let response = passwordsMatch ? foundUser : null;
+    if (response) {
+        req.session.userid = username;
+    }
+    res.json(response);
 
-})
+});
+server.postAsync('/logout', async (req, res, next) => {
+    if (!req.session.userid) {
+        res.json('Already logged out!');
+        return;
+    }
+    req.session.destroy();
+    res.json('Successfully logged out');
+});
 //example of using mongoose to interact with db
 server.postAsync('/newTank', async (req, res, next) => {
     const schema = new mongoose.Schema({ name: 'string', size: 'string' });

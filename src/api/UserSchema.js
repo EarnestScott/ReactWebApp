@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require('./odm');
 const { Schema } = mongoose;
 const bcrypt = require('bcrypt');
 const SALT_WORK_FACTOR = 10;

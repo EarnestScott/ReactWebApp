@@ -2,11 +2,19 @@ import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
+import Toast from 'react-bootstrap/Toast';
+import { useHistory } from "react-router-dom";
+
 function LoginModal() {
     const [show, setShow] = useState(false);
     const [validated, setValidated] = useState(false);
-    const [username, setUsername] = useState(null);
-    const [password, setPassword] = useState(null);
+    const [showToast, setShowToast] = useState(false);
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [formFeedback, setFormFeedback] = useState('Hello');
+    const history = useHistory();
+
+
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
@@ -25,7 +33,21 @@ function LoginModal() {
             body: JSON.stringify(body)
         })
         const loginRequestJson = await loginRequest.json();
-        alert(loginRequestJson);
+        // alert(loginRequestJson);
+        if (loginRequestJson) {
+            setValidated(true);
+            const path = `/about`;
+            history.push(path);
+            setShowToast(true);
+            handleClose();
+        }
+        else {
+            setUsername('');
+            setPassword('');
+            setValidated(false);
+        }
+
+
     };
     const handleUsername = (e) => e && setUsername(e.target.value);
     const handlePassword = (e) => e && setPassword(e.target.value);
@@ -35,21 +57,28 @@ function LoginModal() {
             <Button variant="primary" onClick={handleShow}>
                 Login
             </Button>
-
+            {/* <Toast style={{ zIndex: 1 }} show={showToast} delay={3000} animation autohide>
+                <Toast.Header>
+                    Login successful!
+                </Toast.Header>
+            </Toast> */}
             <Modal show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
                     <Modal.Title>Welcome back!</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Form validated onSubmit={handleSubmit}>
+                    <Form noValidate validated onSubmit={handleSubmit}>
                         <Form.Group className="mb-3" controlId="username">
                             <Form.Label>Username</Form.Label>
-                            <Form.Control name={"username"} type="text" placeholder="Enter username" onChange={handleUsername} />
+                            <Form.Control required name={"username"} type="text" placeholder="Enter username" value={username} onChange={handleUsername} />
+                            <Form.Control.Feedback type={"invalid"}>Please enter valid username</Form.Control.Feedback>
                         </Form.Group>
 
                         <Form.Group className="mb-3" controlId="formBasicPassword">
                             <Form.Label>Password</Form.Label>
-                            <Form.Control name={"password"} type="password" placeholder="Password" onChange={handlePassword} />
+                            <Form.Control required name={"password"} type="password" placeholder="Password" value={password} onChange={handlePassword} />
+                            <Form.Control.Feedback type={"invalid"}>Please enter valid password</Form.Control.Feedback>
+
                         </Form.Group>
                         <Button variant="primary" type="submit">
                             Submit
