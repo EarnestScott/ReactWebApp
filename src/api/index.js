@@ -27,6 +27,7 @@ server.use((req, res, next) => {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
+
 const oneDay = 1000 * 60 * 60 * 24;
 app.use(sessions({
     secret: config.secret,
@@ -34,6 +35,15 @@ app.use(sessions({
     cookie: { maxAge: oneDay },
     resave: false
 }))
+
+const authMiddleware = (req, res, next) => {
+    const { userid } = req.session;
+    if (!userid) {
+        res.statusCode = 401;
+        next("Unauthorized to access resource, please login first");
+    }
+    next();
+}
 
 server.get('/', (req, res) => {
     res.send('Hello World!')
@@ -64,11 +74,12 @@ server.getAsync('/user/:username', async (req, res, next) => {
     const foundUser = await UserSchema.findOne({ username });
     res.json(foundUser);
 });
-server.getAsync('/user/:username/friend', async (req, res, next) => {
-    const { username } = req.params;
+server.getAsync('/friend', async (req, res, next) => {
+    const { userid } = req.session;
+
 
 });
-server.postAsync('/friend', async (req, res, next) => {
+server.postAsync('/friend', authMiddleware, async (req, res, next) => {
     const { userid } = req.session;
     const { firstName, lastName } = req.body;
     if (!userid) {
