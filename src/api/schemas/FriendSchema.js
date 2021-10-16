@@ -20,6 +20,9 @@ const FriendSchema = new Schema({
         type: String,
         required: true
     },
+    nickName: {
+        type: String,
+    },
     prompts: [PromptsSchema]
 
 });
