@@ -3,7 +3,8 @@ const { addAsync } = require('@awaitjs/express');
 const bluebird = require('bluebird');
 const fetch = require('node-fetch');
 const mongoose = require('./odm');
-const UserSchema = require('./UserSchema');
+const UserSchema = require('./schemas/UserSchema');
+const FriendSchema = require('./schemas/FriendSchema');
 const fs = require('fs');
 const bodyParser = require('body-parser');
 const cookieParser = require("cookie-parser");
@@ -62,12 +63,40 @@ server.getAsync('/user/:username', async (req, res, next) => {
     const username = req.params.username;
     const foundUser = await UserSchema.findOne({ username });
     res.json(foundUser);
-})
+});
+server.getAsync('/user/:username/friend', async (req, res, next) => {
+    const { username } = req.params;
+
+});
+server.postAsync('/friend', async (req, res, next) => {
+    const { userid } = req.session;
+    const { firstName, lastName } = req.body;
+    if (!userid) {
+        res.statusCode = 403;
+        res.json('Please sign in');
+        return;
+    }
+    if (!firstName || !lastName) {
+        res.statusCode = 400;
+        res.json('Please submit firstName and lastName');
+        return;
+    }
+    const foundUser = await UserSchema.findOne({ username: userid });
+    const createdFriend = await FriendSchema.create({ firstName, lastName });
+    foundUser.friends.push(createdFriend);
+    await foundUser.save();
+    res.json(foundUser);
+});
 server.postAsync('/login', async (req, res, next) => {
     let session = req.session;
     const { username, password } = req.body;
     if (session.userid) {
         res.json(`You're already logged in ${session.userid}`);
+        return;
+    }
+    if (!username || !password) {
+        res.statusCode = 400;
+        res.json('Please enter a username and password');
         return;
     }
     const foundUser = await UserSchema.findOne({ username });
