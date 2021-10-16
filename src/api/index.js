@@ -82,11 +82,6 @@ server.getAsync('/friend', async (req, res, next) => {
 server.postAsync('/friend', authMiddleware, async (req, res, next) => {
     const { userid } = req.session;
     const { firstName, lastName } = req.body;
-    if (!userid) {
-        res.statusCode = 403;
-        res.json('Please sign in');
-        return;
-    }
     if (!firstName || !lastName) {
         res.statusCode = 400;
         res.json('Please submit firstName and lastName');
