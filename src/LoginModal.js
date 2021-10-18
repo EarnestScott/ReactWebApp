@@ -29,6 +29,7 @@ function LoginModal() {
         const body = { username, password };
         const loginRequest = await fetch('http://localhost:3001/login', {
             method: 'POST',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         })

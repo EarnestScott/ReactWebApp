@@ -8,6 +8,7 @@ import Home from './Home';
 import LoginModal from './LoginModal';
 import About from './About';
 import NewsDisplay from './NewsDisplay';
+import FriendHome from './FriendHome';
 function NavbarComponent() {
     return (
         <React.Fragment>
@@ -27,6 +28,7 @@ function NavbarComponent() {
                         <Nav.Link as={Link} to={"/"} >Home</Nav.Link>
                         <Nav.Link as={Link} to={"/companies"}>Company News Page</Nav.Link>
                         <Nav.Link as={Link} to={"/about"}>About Us</Nav.Link>
+                        <Nav.Link as={Link} to={"/friends"}>Friends</Nav.Link>
                     </Nav>
                     <Nav>
                         <Nav.Link style={{ float: "right" }} as={LoginModal} >Login</Nav.Link>
@@ -37,6 +39,7 @@ function NavbarComponent() {
                 <Route exact path='/' component={Home} />
                 <Route path='/companies' component={NewsDisplay} />
                 <Route path='/about' component={About} />
+                <Route path='/friends' component={FriendHome} />
                 {/* <Route exact path='/login' component={LoginModal} /> */}
                 <Route render={function () {
                     return <p>Not found</p>

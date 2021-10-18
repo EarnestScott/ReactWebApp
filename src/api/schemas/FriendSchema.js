@@ -1,4 +1,4 @@
-const mongoose = require('../odm');
+const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const PromptsSchema = new Schema({
@@ -27,4 +27,4 @@ const FriendSchema = new Schema({
 
 });
 
-module.exports = mongoose.model('Friend', FriendSchema);
+module.exports = FriendSchema;

@@ -1,4 +1,5 @@
-const mongoose = require('../odm');
+const mongoose = require('mongoose');
+const passportLocalMongoose = require('passport-local-mongoose');
 const { Schema } = mongoose;
 const FriendSchema = require('./FriendSchema');
 const bcrypt = require('bcrypt');
@@ -18,6 +19,7 @@ const UserSchema = new Schema({
     },
     friends: [{ ref: 'Friend', type: Schema.Types.ObjectId }]
 });
+UserSchema.plugin(passportLocalMongoose);
 UserSchema.pre('save', function (next) {
     const user = this;
     if (!user.isModified('password')) return next();
@@ -37,4 +39,4 @@ UserSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 }
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = UserSchema;
