@@ -3,14 +3,7 @@ const { addAsync } = require('@awaitjs/express');
 const bluebird = require('bluebird');
 const fetch = require('node-fetch');
 const mongoose = require('./odm')();
-// const mongoose = require('mongoose');
 const cors = require('cors');
-// const passport = require('passport');
-// const LocalStategy = require('passport-local');
-// const passportLocalMongoose = require('passport-local-mongoose');
-// // console.log(mongoose);
-// const mongoose.models.User = require('./schemas/mongoose.models.User');
-// const mongoose.models.Friend = require('./schemas/mongoose.models.Friend');
 const fs = require('fs');
 const bodyParser = require('body-parser');
 const cookieParser = require("cookie-parser");
@@ -22,55 +15,21 @@ let config = JSON.parse(rawdata);
 
 const { user, password, database } = config;
 const uri = `mongodb+srv://${user}:${password}@cluster0.kydyz.mongodb.net/${database}?retryWrites=true&w=majority`;
-// mongoose.connect(uri).then(() => store = MongoStore.create({
-//     // mongoUrl: uri,    // uri: mongoose.connection,
-//     client: mongoose.connection,
-//     collection: 'Sessions',
-//     autoRemove: 'native',
-
-// }));
-
-// mongoose.model('User', require('./schemas/UserSchema'));
-// mongoose.model('Friend', require('./schemas/FriendSchema'));
-// const clientP = mongoose.connect(
-//     uri,
-//     { useNewUrlParser: true, useUnifiedTopology: true }
-// ).then(m => m.connection.getClient())
 
 const app = addAsync(express());
 const oneDay = 1000 * 60 * 60 * 24;
 
 const store = MongoStore.create({
-    mongoUrl: uri,    // uri: mongoose.connection,
-    // client: mongoose.connection,
+    mongoUrl: uri,
     collection: 'Sessions',
     autoRemove: 'native',
     stringify: false
 
 });
 
-// store.on('error', function (error) {
-//     console.log(error);
-// });
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
-// app.use(session({
-//     secret: 'foo',
-//     resave: false,
-//     saveUninitialized: false,
-//     store: MongoStore.create({
-//         clientPromise: clientP,
-//         stringify: false,
-//         autoRemove: 'interval',
-//         autoRemoveInterval: 1,
-//         collection: 'sessions'
-//     })
-// }));
-
-// app.use(passport.initialize());
-// app.use(passport.session());
 const port = 3001
 
 
@@ -80,25 +39,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// const sessionInit = (client) => {
-//     app.use(
-//         session({
-//             store: MongoStore.create({
-//                 client: client,
-//                 mongoOptions: {
-//                     useNewUrlParser: true,
-//                     useUnifiedTopology: true,
-//                 },
-//             }),
-//             secret: config.secret,
-//             collection: 'sessions',
-//             resave: false,
-//             saveUninitialized: false,
-//             cookie: { maxAge: oneDay },
-//         })
-//     )
-// }
-
 app.use(session({
     secret: config.secret,
     // don't create session if unmodified
@@ -106,37 +46,19 @@ app.use(session({
     cookie: { maxAge: oneDay, secure: false },
     // don't save session if unmodified
     resave: false,
-    // store
+    store
 }));
 app.use(cors({ credentials: true, origin: true }));
 
 const authMiddleware = (req, res, next) => {
 
-    console.log(req.session);
     const { userid } = req.session;
-    console.log(userid);
     if (!userid) {
         res.statusCode = 401;
         next("Unauthorized to access resource, please login first");
     }
     next();
 }
-app.use(function (req, res, next) {
-    console.log("midd");
-    console.log(req.session)
-    if (req.session && req.session.userid) {
-        mongoose.models.User.findOne({ username: req.session.userid }, function (err, user) {
-            if (!err && user) {
-                req.user = user;
-                next();
-            } else {
-                next(new Error('Could not restore User from Session.'));
-            }
-        });
-    } else {
-        next();
-    }
-});
 
 app.get('/', (req, res) => {
     res.send('Hello World!')
@@ -167,10 +89,7 @@ app.getAsync('/user/:username', async (req, res, next) => {
     const foundUser = await mongoose.models.User.findOne({ username });
     res.json(foundUser);
 });
-app.getAsync('/friends', async (req, res, next) => {
-    let session = req.session;
-    console.log(session.id);
-    console.log(session);
+app.getAsync('/friends', authMiddleware, async (req, res, next) => {
     const { userid } = req.session;
     console.log(userid);
     const foundUserAndFriends = await mongoose.models.User.findOne({ username: userid }).populate('friends');
@@ -194,7 +113,6 @@ app.postAsync('/friend', authMiddleware, async (req, res, next) => {
 });
 app.postAsync('/login', async (req, res, next) => {
     let session = req.session;
-    console.log(session)
     const { username, password } = req.body;
     if (session.userid) {
         res.json(`You're already logged in ${session.userid}`);
@@ -208,21 +126,12 @@ app.postAsync('/login', async (req, res, next) => {
     const foundUser = await mongoose.models.User.findOne({ username });
     const passwordsMatch = await foundUser?.comparePassword(password);
     if (foundUser && passwordsMatch) {
-        // const userSession = await mongoose.models.Sessions.findOne({});
-        const userSession = await mongoose.collection('sessions').findOne({ 'session.userid': username });
-        console.log("user session");
-        console.log(userSession);
-        req.session.cookie = userSession.session.cookie;
-        req.session.userid = userSession.session.userid
-        // req.session.save();
+        req.session.userid = username;
         res.send(req.session);
-        // req.session.save(err => console.log(err));
     }
     else {
         res.json(null);
     }
-
-
 });
 app.postAsync('/logout', async (req, res, next) => {
     if (!req.session.userid) {
