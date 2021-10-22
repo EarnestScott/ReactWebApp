@@ -117,6 +117,23 @@ app.getAsync('/friend/:id', authMiddleware, async (req, res, next) => {
     const foundFriend = await mongoose.models.Friend.findById(id).exec();
     res.json(foundFriend);
 });
+// var comment = post.comments.id(my_id);
+// comment.author = 'Bruce Wayne';
+
+// post.save(function (err) {
+//     // emmbeded comment with author updated     
+// });
+app.postAsync('/friend/:id/prompt', authMiddleware, async (req, res, next) => {
+    const { prompt, response } = req.body;
+    const { id } = req.params;
+    console.log(prompt, response);
+    const foundFriend = await mongoose.models.Friend.findById(id).exec();
+    if (foundFriend) {
+        foundFriend.prompts.push({ prompt, response });
+        await foundFriend.save();
+    }
+    res.json(foundFriend);
+});
 
 app.postAsync('/login', async (req, res, next) => {
     let session = req.session;
