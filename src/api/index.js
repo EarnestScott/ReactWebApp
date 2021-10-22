@@ -111,6 +111,13 @@ app.postAsync('/friend', authMiddleware, async (req, res, next) => {
     await foundUser.save();
     res.json(foundUser);
 });
+
+app.getAsync('/friend/:id', authMiddleware, async (req, res, next) => {
+    const { id } = req.params;
+    const foundFriend = await mongoose.models.Friend.findById(id).exec();
+    res.json(foundFriend);
+});
+
 app.postAsync('/login', async (req, res, next) => {
     let session = req.session;
     const { username, password } = req.body;

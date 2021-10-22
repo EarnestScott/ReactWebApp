@@ -1,18 +1,21 @@
 import React from 'react';
 import Card from 'react-bootstrap/Card';
+import { Link } from 'react-router-dom';
+function FriendCard({ firstName, lastName, nickName, _id }) {
 
-function FriendCard({ firstName, lastName, nickName }) {
 
     return (
         <>
-            <Card>
-                <Card.Body>
-                    <Card.Title>{firstName} {lastName}</Card.Title>
-                    <Card.Text>
-                        {nickName ? `"${nickName}"` : ''}
-                    </Card.Text>
-                </Card.Body>
-            </Card>
+            <Link to={`/friend/${_id}`} style={{ textDecoration: 'none', color: 'black' }}>
+                <Card hoverable>
+                    <Card.Body>
+                        <Card.Title>{firstName} {lastName}</Card.Title>
+                        <Card.Text>
+                            {nickName ? `"${nickName}"` : ''}
+                        </Card.Text>
+                    </Card.Body>
+                </Card>
+            </Link>
         </>
     );
 }

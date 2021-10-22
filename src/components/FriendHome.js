@@ -29,7 +29,7 @@ function FriendHome() {
                 Friends
             </h1>
             <Container>
-                <Row>
+                <Row sm={1} md={3}>
                     {friends && friends.map((props) => <Col><FriendCard {...props} ></FriendCard></Col>)}
                 </Row>
             </Container>

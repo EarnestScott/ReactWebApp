@@ -3,12 +3,13 @@ import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import Container from 'react-bootstrap/Container';
 import logo from '../logo.svg';
-import { Switch, Route, Link } from 'react-router-dom';
+import { Switch, Route, Link, useParams } from 'react-router-dom';
 import Home from './Home';
 import LoginModal from './LoginModal';
 import About from './About';
 import NewsDisplay from './NewsDisplay';
 import FriendHome from './FriendHome';
+import FriendDetails from './FriendDetails';
 function NavbarComponent() {
     return (
         <React.Fragment>
@@ -40,6 +41,7 @@ function NavbarComponent() {
                 <Route path='/companies' component={NewsDisplay} />
                 <Route path='/about' component={About} />
                 <Route path='/friends' component={FriendHome} />
+                <Route path='/friend/:id' component={FriendDetails} />
                 {/* <Route exact path='/login' component={LoginModal} /> */}
                 <Route render={function () {
                     return <p>Not found</p>
